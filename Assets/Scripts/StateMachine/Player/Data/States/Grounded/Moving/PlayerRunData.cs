@@ -1,7 +1,8 @@
+using System;
 using UnityEngine;
 
 
-[SerializeField]
+[Serializable]
 public class PlayerRunData
 {
     [field: SerializeField]

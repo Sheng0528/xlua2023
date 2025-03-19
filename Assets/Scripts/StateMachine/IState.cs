@@ -7,4 +7,10 @@ public interface IState
     public void HandleInput();
     public void Update();
     public void PhysicsUpdate();
+    public void OnAnimationEnterEvent();
+    public void OnAnimationExitEvent();
+    /// <summary>
+    /// 动画转换事件
+    /// </summary>
+    public void OnAnimationTransitionEvent();
 }

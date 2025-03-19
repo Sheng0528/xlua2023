@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Player", menuName = "TestProject/Characters/Player")]
+[CreateAssetMenu(fileName = "Player", menuName = "Characters/Player")]
 public class PlayerSO : ScriptableObject
 {
     [field: SerializeField] public PlayerGroundedData GroundedData { get; private set; }
