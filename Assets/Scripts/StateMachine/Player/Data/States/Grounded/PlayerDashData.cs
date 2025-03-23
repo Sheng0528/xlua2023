@@ -33,4 +33,6 @@ public class PlayerDashData
     [field: SerializeField]
     [field: Range(0f, 5f)]
     public float DashLimitReachedCooldown { get; private set; } = 1.75f;
+    
+    [field:SerializeField]public PlayerRotationData RotationData { get; private set; }
 }

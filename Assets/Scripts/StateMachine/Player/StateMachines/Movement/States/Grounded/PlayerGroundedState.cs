@@ -83,12 +83,12 @@ public class PlayerGroundedState : PlayerMovementState
     {
         if (stateMachine.ReusableData.ShouldWalk)
         {
-            stateMachine.ChangeState((stateMachine.walkingState));
+            stateMachine.ChangeState((stateMachine.WalkingState));
 
             return;
         }
 
-        stateMachine.ChangeState((stateMachine.runningState));
+        stateMachine.ChangeState((stateMachine.RunningState));
     }
 
     #endregion
@@ -98,12 +98,12 @@ public class PlayerGroundedState : PlayerMovementState
 
     protected virtual void OnMovementCanceled(InputAction.CallbackContext context)
     {
-        stateMachine.ChangeState(stateMachine.idlingState);
+        stateMachine.ChangeState(stateMachine.IdlingState);
     }
 
     protected virtual void OnDashStarted(InputAction.CallbackContext context)
     {
-        stateMachine.ChangeState(stateMachine.dashingState);
+        stateMachine.ChangeState(stateMachine.DashingState);
     }
 
     #endregion

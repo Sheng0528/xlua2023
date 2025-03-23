@@ -15,6 +15,8 @@ public class PlayerIdingState : PlayerGroundedState
 
         stateMachine.ReusableData.MovementSpeedModifier = 0f;
 
+        stateMachine.ReusableData.CurrentJumpForce = airborneData.JumpData.StationaryForce;
+
         ResetVelocity();
     }
 
@@ -34,12 +36,12 @@ public class PlayerIdingState : PlayerGroundedState
     {
         if (stateMachine.ReusableData.ShouldWalk)
         {
-            stateMachine.ChangeState((stateMachine.walkingState));
+            stateMachine.ChangeState((stateMachine.WalkingState));
 
             return;
         }
 
-        stateMachine.ChangeState((stateMachine.runningState));
+        stateMachine.ChangeState((stateMachine.RunningState));
     }
 
     #endregion

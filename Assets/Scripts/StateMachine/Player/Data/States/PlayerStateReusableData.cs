@@ -9,6 +9,8 @@ public class PlayerStateReusableData
     public float MovementSpeedModifier { get; set; } = 1f;
     
     public float MovementOnSlopesSpeedModifier { get; set; } = 1f;
+    
+    public float MovementDecelerationForce { get; set; } = 1f;
 
     public bool ShouldWalk { get; set; }
 
@@ -36,4 +38,8 @@ public class PlayerStateReusableData
     {
         get { return ref dampTargetRotationPassTime; }
     }
+    
+    public Vector3 CurrentJumpForce { get; set; }
+
+    public PlayerRotationData RotationData { get; set; }
 }

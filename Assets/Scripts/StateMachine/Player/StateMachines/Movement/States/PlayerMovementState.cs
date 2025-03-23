@@ -4,22 +4,26 @@ using UnityEngine.InputSystem;
 public class PlayerMovementState : IState
 {
     protected PlayerMovementStateMachine stateMachine;
-    
+
     protected PlayerGroundedData movementData;
+
+    protected PlayerAirborneData airborneData;
 
     public PlayerMovementState(PlayerMovementStateMachine playerMovementStateMachine)
     {
         stateMachine = playerMovementStateMachine;
-        
+
         movementData = stateMachine.Player.Data.GroundedData;
+        airborneData = stateMachine.Player.Data.AirborneData;
 
         InitializeData();
     }
 
     private void InitializeData()
     {
-        stateMachine.ReusableData.TimeToReachTargetRotation = movementData.BaseRotationData.TargetRotationReachTime;
+        SetBaseRotationData();
     }
+
 
     #region IState Methods
 
@@ -52,17 +56,14 @@ public class PlayerMovementState : IState
 
     public virtual void OnAnimationEnterEvent()
     {
-        
     }
 
     public virtual void OnAnimationExitEvent()
     {
-        
     }
 
     public virtual void OnAnimationTransitionEvent()
     {
-        
     }
 
     #endregion
@@ -140,6 +141,19 @@ public class PlayerMovementState : IState
 
     #region Reusable Methods
 
+    protected void SetBaseRotationData()
+    {
+        stateMachine.ReusableData.RotationData = movementData.BaseRotationData;
+        stateMachine.ReusableData.TimeToReachTargetRotation =
+            stateMachine.ReusableData.RotationData.TargetRotationReachTime;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="direction"></param>
+    /// <param name="shouldConsiderCameraRotation">考虑相机方向？</param>
+    /// <returns></returns>
     protected float UpdateTargetRotation(Vector3 direction, bool shouldConsiderCameraRotation = true)
     {
         float directionAngle = GetDirectionAngle(direction);
@@ -167,7 +181,9 @@ public class PlayerMovementState : IState
         }
 
         float smmothedYAngle = Mathf.SmoothDampAngle(currentYAngle, stateMachine.ReusableData.CurrentTargetRotation.y,
-            ref stateMachine.ReusableData.DampTargetRotationCurrentVelocity.y, stateMachine.ReusableData.TimeToReachTargetRotation.y - stateMachine.ReusableData.DampTargetRotationPassTime.y);
+            ref stateMachine.ReusableData.DampTargetRotationCurrentVelocity.y,
+            stateMachine.ReusableData.TimeToReachTargetRotation.y -
+            stateMachine.ReusableData.DampTargetRotationPassTime.y);
         stateMachine.ReusableData.DampTargetRotationPassTime.y += Time.deltaTime;
 
         Quaternion targetRotation = Quaternion.Euler(0f, smmothedYAngle, 0f);
@@ -182,8 +198,8 @@ public class PlayerMovementState : IState
         playerHorizontalVelocity.y = 0f;
         return playerHorizontalVelocity;
     }
-    
-    protected Vector3  GetPlayerVerticalVelocity()
+
+    protected Vector3 GetPlayerVerticalVelocity()
     {
         return new Vector3(0f, stateMachine.Player.Rigidbody.velocity.y, 0f);
     }
@@ -195,7 +211,8 @@ public class PlayerMovementState : IState
 
     protected float GetMovementSpeed()
     {
-        return movementData.BaseSpeed * stateMachine.ReusableData.MovementSpeedModifier * stateMachine.ReusableData.MovementOnSlopesSpeedModifier;
+        return movementData.BaseSpeed * stateMachine.ReusableData.MovementSpeedModifier *
+               stateMachine.ReusableData.MovementOnSlopesSpeedModifier;
     }
 
     protected Vector3 GetTargetRotationDirection(float targetAngle)
@@ -216,6 +233,25 @@ public class PlayerMovementState : IState
     protected virtual void RemoveInputActionsCallbacks()
     {
         stateMachine.Player.Input.PlayerActions.WalkToggle.started -= OnWalkToggleStarted;
+    }
+
+    /// <summary>
+    /// 水平减速
+    /// </summary>
+    protected void DecelerateHorizontally()
+    {
+        Vector3 horizontalVelocity = GetPlayerHorizontalVelocity();
+        stateMachine.Player.Rigidbody.AddForce(
+            -horizontalVelocity * stateMachine.ReusableData.MovementDecelerationForce, ForceMode.Acceleration);
+    }
+
+    protected bool IsMovingHorizontally(float minimumMagnitude = 0.1f)
+    {
+        Vector3 playerHorizontalVelocity = GetPlayerHorizontalVelocity();
+
+        Vector2 playerHorizontalMovement = new Vector2(playerHorizontalVelocity.x, playerHorizontalVelocity.z);
+
+        return playerHorizontalMovement.magnitude > minimumMagnitude;
     }
 
     #endregion

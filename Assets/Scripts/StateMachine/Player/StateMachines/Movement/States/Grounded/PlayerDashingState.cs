@@ -7,7 +7,11 @@ public class PlayerDashingState : PlayerGroundedState
 {
     private PlayerDashData dashData;
     private float startTime;
+    /// <summary>
+    /// 连续使用的冲刺次数
+    /// </summary>
     private int consecutiveDashesUsed;
+    private bool shouldKeepRotating;
 
     public PlayerDashingState(PlayerMovementStateMachine playerMovementStateMachine) : base(playerMovementStateMachine)
     {
@@ -19,26 +23,49 @@ public class PlayerDashingState : PlayerGroundedState
         base.Enter();
 
         stateMachine.ReusableData.MovementSpeedModifier = dashData.SpeedModifier;
+        
+        stateMachine.ReusableData.CurrentJumpForce = airborneData.JumpData.StrongForce;
+
+        stateMachine.ReusableData.RotationData = dashData.RotationData;
 
         AddForceOnTransitionFromstationaryState();
+        
+        shouldKeepRotating = stateMachine.ReusableData.MovementInput != Vector2.zero;
         
         UpdateConsecutiveDashes();
         
         startTime = Time.time;
     }
 
+    public override void Exit()
+    {
+        base.Exit();
+        
+        SetBaseRotationData();
+    }
+
+    public override void PhysicsUpdate()
+    {
+        base.PhysicsUpdate();
+
+        if (!shouldKeepRotating)
+        {
+            return;
+        }
+        
+        RotateTowardsTargetRotation();
+    }
+
     public override void OnAnimationEnterEvent()
     {
-        base.OnAnimationEnterEvent();
-
         if (stateMachine.ReusableData.MovementInput == Vector2.zero)
         {
-            stateMachine.ChangeState(stateMachine.idlingState);
+            stateMachine.ChangeState(stateMachine.HardStoppingState);
             
             return;
         }
         
-        stateMachine.ChangeState(stateMachine.sprintingState);
+        stateMachine.ChangeState(stateMachine.SprintingState);
     }
 
     #region Main Methods
@@ -74,7 +101,27 @@ public class PlayerDashingState : PlayerGroundedState
         Vector3 characterRotationDirection = stateMachine.Player.transform.forward;
         characterRotationDirection.y = 0f;
 
+        UpdateTargetRotation(characterRotationDirection, false);
+
         stateMachine.Player.Rigidbody.velocity = characterRotationDirection * GetMovementSpeed();
+    }
+
+    #endregion
+
+    #region Resuable Methods
+
+    protected override void AddInputActionsCallbacks()
+    {
+        base.AddInputActionsCallbacks();
+        
+        stateMachine.Player.Input.PlayerActions.Movement.performed += OnMovementPerformed;
+    }
+
+    protected override void RemoveInputActionsCallbacks()
+    {
+        base.RemoveInputActionsCallbacks();
+        
+        stateMachine.Player.Input.PlayerActions.Movement.performed -= OnMovementPerformed;
     }
 
     #endregion
@@ -90,5 +137,9 @@ public class PlayerDashingState : PlayerGroundedState
     {
     }
 
+    private void OnMovementPerformed(InputAction.CallbackContext context)
+    {
+        shouldKeepRotating = true;
+    }
     #endregion
 }

@@ -32,7 +32,7 @@ public class Player : MonoBehaviour
 
     private void Start()
     {
-        movementStateMachine.ChangeState(movementStateMachine.idlingState);
+        movementStateMachine.ChangeState(movementStateMachine.IdlingState);
     }
 
     private void Update()

@@ -1,9 +1,11 @@
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerSprintingState : PlayerMovingState
 {
     
     private PlayerSprintData sprintData;
+    private float startTime;
     private bool keepSprinting;
     public PlayerSprintingState(PlayerMovementStateMachine playerMovementStateMachine) : base(
         playerMovementStateMachine)
@@ -18,6 +20,10 @@ public class PlayerSprintingState : PlayerMovingState
         base.Enter();
         
         stateMachine.ReusableData.MovementSpeedModifier = sprintData.SpeedModifier;
+        
+        stateMachine.ReusableData.CurrentJumpForce = airborneData.JumpData.StrongForce;
+        
+        startTime = Time.time;
     }
 
     public override void Update()
@@ -28,8 +34,36 @@ public class PlayerSprintingState : PlayerMovingState
         {
             return;
         }
+
+        if (Time.time < startTime + sprintData.SprintToRunTime)
+        {
+            return;
+        }
+
+        StopSprinting();
     }
 
+    public override void Exit()
+    {
+        base.Exit();
+        
+        keepSprinting = false;
+    }
+
+    #endregion
+
+    #region Main Methods
+    private void StopSprinting()
+    {
+        if (stateMachine.ReusableData.MovementInput == Vector2.zero)
+        {
+            stateMachine.ChangeState(stateMachine.IdlingState);
+            
+            return;
+        }
+        
+        stateMachine.ChangeState(stateMachine.RunningState);
+    }
     #endregion
 
     #region Resuable Methods
@@ -52,6 +86,11 @@ public class PlayerSprintingState : PlayerMovingState
     #endregion
 
     #region Input Methods
+    
+    protected override void OnMovementCanceled(InputAction.CallbackContext context)
+    {
+        stateMachine.ChangeState(stateMachine.HardStoppingState);
+    }
     private void OnSprintPerformed(InputAction.CallbackContext context)
     {
         keepSprinting = true;

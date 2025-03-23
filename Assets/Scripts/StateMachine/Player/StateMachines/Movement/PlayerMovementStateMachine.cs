@@ -2,20 +2,34 @@ public class PlayerMovementStateMachine : StateMachine
 {
     public Player Player { get; }
     public PlayerStateReusableData ReusableData { get; }
-    public PlayerIdingState idlingState { get; private set; }
-    public PlayerDashingState dashingState { get; private set; }
-    public PlayerWalkingState walkingState { get; private set; }
-    public PlayerRunningState runningState { get; private set; }
-    public PlayerSprintingState sprintingState { get; private set; }
+    public PlayerIdingState IdlingState { get; }
+    public PlayerDashingState DashingState { get; }
+    public PlayerWalkingState WalkingState { get; }
+    public PlayerRunningState RunningState { get; }
+    public PlayerSprintingState SprintingState { get; }
+
+    public PlayerLightStoppingState LightStoppingState { get; }
+    public PlayerMediumStoppingState MediumStoppingState { get; }
+    public PlayerHardStoppingState HardStoppingState { get; }
+    
+    public PlayerJumpingState JumpingState { get; }
 
     public PlayerMovementStateMachine(Player player)
     {
         Player = player;
         ReusableData = new PlayerStateReusableData();
-        idlingState = new PlayerIdingState(this);
-        dashingState = new PlayerDashingState(this);
-        walkingState = new PlayerWalkingState(this);
-        runningState = new PlayerRunningState(this);
-        sprintingState = new PlayerSprintingState(this);
+        
+        IdlingState = new PlayerIdingState(this);
+        DashingState = new PlayerDashingState(this);
+        
+        WalkingState = new PlayerWalkingState(this);
+        RunningState = new PlayerRunningState(this);
+        SprintingState = new PlayerSprintingState(this);
+        
+        LightStoppingState = new PlayerLightStoppingState(this);
+        MediumStoppingState = new PlayerMediumStoppingState(this);
+        HardStoppingState = new PlayerHardStoppingState(this);
+        
+        JumpingState = new PlayerJumpingState(this);
     }
 }
