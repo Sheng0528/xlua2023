@@ -66,6 +66,16 @@ public class PlayerMovementState : IState
     {
     }
 
+    public virtual void OnTriggerEnter(Collider collider)
+    {
+        if (stateMachine.Player.LayerData.isGroundLayer(collider.gameObject.layer))
+        {
+            OnContactWithGround(collider);
+            
+            return;
+        }
+    }
+    
     #endregion
 
     #region Main Methods
@@ -254,6 +264,10 @@ public class PlayerMovementState : IState
         return playerHorizontalMovement.magnitude > minimumMagnitude;
     }
 
+    protected virtual void OnContactWithGround(Collider collider)
+    {
+        
+    }
     #endregion
 
     #region Input Methods

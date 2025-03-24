@@ -21,9 +21,9 @@ public class PlayerGroundedState : PlayerMovementState
 
     private void Float()
     {
-        Vector3 capsuleColliderCenter = stateMachine.Player.ColliderUtility.CapsuleColliderData.Collider.bounds.center;
+        Vector3 capsuleColliderCenterInWorldSpace = stateMachine.Player.ColliderUtility.CapsuleColliderData.Collider.bounds.center;
 
-        Ray downwardsRayFromCapsuleCenter = new Ray(capsuleColliderCenter, Vector3.down);
+        Ray downwardsRayFromCapsuleCenter = new Ray(capsuleColliderCenterInWorldSpace, Vector3.down);
 
         if (Physics.Raycast(downwardsRayFromCapsuleCenter, out RaycastHit hit, slopeData.FloatRayDistance,
                 stateMachine.Player.LayerData.GroundLayer, QueryTriggerInteraction.Ignore))
@@ -31,8 +31,8 @@ public class PlayerGroundedState : PlayerMovementState
             float groundAngle = Vector3.Angle(hit.normal, -downwardsRayFromCapsuleCenter.direction);
 
             float slopeSpeedModifier = SetSlopeSpeedModifierOnAngele(groundAngle);
-            
-            if(slopeSpeedModifier == 0f)
+
+            if (slopeSpeedModifier == 0f)
             {
                 return;
             }
@@ -68,16 +68,23 @@ public class PlayerGroundedState : PlayerMovementState
         base.AddInputActionsCallbacks();
 
         stateMachine.Player.Input.PlayerActions.Movement.canceled += OnMovementCanceled;
-        
+
         stateMachine.Player.Input.PlayerActions.Dash.started += OnDashStarted;
+
+        stateMachine.Player.Input.PlayerActions.Jump.started += OnJumpStarted;
     }
 
     protected override void RemoveInputActionsCallbacks()
     {
         base.RemoveInputActionsCallbacks();
 
-        stateMachine.Player.Input.PlayerActions.Movement.canceled += OnMovementCanceled;
+        stateMachine.Player.Input.PlayerActions.Movement.canceled -= OnMovementCanceled;
+
+        stateMachine.Player.Input.PlayerActions.Dash.started -= OnDashStarted;
+
+        stateMachine.Player.Input.PlayerActions.Jump.started -= OnJumpStarted;
     }
+
 
     protected virtual void OnMove()
     {
@@ -106,5 +113,9 @@ public class PlayerGroundedState : PlayerMovementState
         stateMachine.ChangeState(stateMachine.DashingState);
     }
 
+    protected virtual void OnJumpStarted(InputAction.CallbackContext context)
+    {
+        stateMachine.ChangeState(stateMachine.JumpingState);
+    }
     #endregion
 }

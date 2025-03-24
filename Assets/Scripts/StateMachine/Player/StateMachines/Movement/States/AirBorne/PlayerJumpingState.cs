@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PlayerJumpingState : PlayerAirborneState
 {
+    private bool shouldKeepRotating;
     public PlayerJumpingState(PlayerMovementStateMachine playerMovementStateMachine) : base(playerMovementStateMachine)
     {
     }
@@ -15,9 +16,19 @@ public class PlayerJumpingState : PlayerAirborneState
 
         stateMachine.ReusableData.MovementSpeedModifier = 0f;
 
+        shouldKeepRotating = stateMachine.ReusableData.MovementInput != Vector2.zero;
         Jump();
     }
 
+    public override void PhysicsUpdate()
+    {
+        base.PhysicsUpdate();
+
+        if (shouldKeepRotating)
+        {
+            RotateTowardsTargetRotation();
+        }
+    }
 
     #endregion
 
@@ -27,10 +38,15 @@ public class PlayerJumpingState : PlayerAirborneState
     {
         Vector3 jumpForce = stateMachine.ReusableData.CurrentJumpForce;
         
-        Vector3 playerForward = stateMachine.Player.transform.forward;
+        Vector3 jumpDirection = stateMachine.Player.transform.forward;
 
-        jumpForce.x *= playerForward.x;
-        jumpForce.z *= playerForward.z;
+        if (shouldKeepRotating)
+        {
+            jumpDirection = GetTargetRotationDirection(stateMachine.ReusableData.CurrentTargetRotation.y);
+        }
+
+        jumpForce.x *= jumpDirection.x;
+        jumpForce.z *= jumpDirection.z;
         
         ResetVelocity();
         

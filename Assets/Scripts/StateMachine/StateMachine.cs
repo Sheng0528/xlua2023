@@ -1,4 +1,6 @@
-﻿public abstract class StateMachine
+﻿using UnityEngine;
+
+public abstract class StateMachine
 {
     protected IState currentState;
 
@@ -42,5 +44,10 @@
     public void OnAnimationTransitionEvent()
     {
         currentState?.OnAnimationTransitionEvent();
+    }
+    
+    public void OnTriggerEnter(Collider collider)
+    {
+        currentState.OnTriggerEnter(collider);
     }
 }

@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public interface IState
 {
     public void Enter();
@@ -13,4 +15,6 @@ public interface IState
     /// 动画转换事件
     /// </summary>
     public void OnAnimationTransitionEvent();
+
+    public void OnTriggerEnter(Collider collider);
 }
