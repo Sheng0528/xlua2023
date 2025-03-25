@@ -76,6 +76,15 @@ public class PlayerMovementState : IState
         }
     }
     
+    public void OnTriggerExit(Collider collider)
+    {
+        if (stateMachine.Player.LayerData.isGroundLayer(collider.gameObject.layer))
+        {
+            OnContactWithGroundExited(collider);
+            
+            return;
+        }
+    }
     #endregion
 
     #region Main Methods
@@ -250,9 +259,16 @@ public class PlayerMovementState : IState
     /// </summary>
     protected void DecelerateHorizontally()
     {
-        Vector3 horizontalVelocity = GetPlayerHorizontalVelocity();
+        Vector3 playerHorizontalVelocity = GetPlayerHorizontalVelocity();
         stateMachine.Player.Rigidbody.AddForce(
-            -horizontalVelocity * stateMachine.ReusableData.MovementDecelerationForce, ForceMode.Acceleration);
+            -playerHorizontalVelocity * stateMachine.ReusableData.MovementDecelerationForce, ForceMode.Acceleration);
+    }
+    
+    protected void DecelerateVertically()
+    {
+        Vector3 playerVerticalVelocity = GetPlayerVerticalVelocity();
+        stateMachine.Player.Rigidbody.AddForce(
+            -playerVerticalVelocity * stateMachine.ReusableData.MovementDecelerationForce, ForceMode.Acceleration);
     }
 
     protected bool IsMovingHorizontally(float minimumMagnitude = 0.1f)
@@ -264,13 +280,27 @@ public class PlayerMovementState : IState
         return playerHorizontalMovement.magnitude > minimumMagnitude;
     }
 
-    protected virtual void OnContactWithGround(Collider collider)
+    protected bool IsMovingUp(float minimumMagnitude = 0.1f)
     {
-        
+        return GetPlayerVerticalVelocity().y > minimumMagnitude;
+    }
+    
+    protected bool IsMovingDown(float minimumMagnitude = 0.1f)
+    {
+        return GetPlayerVerticalVelocity().y < -minimumMagnitude;
     }
     #endregion
 
     #region Input Methods
+    protected virtual void OnContactWithGround(Collider collider)
+    {
+        
+    }
+
+    protected virtual void OnContactWithGroundExited(Collider collider)
+    {
+        
+    }
 
     protected virtual void OnWalkToggleStarted(InputAction.CallbackContext context)
     {
