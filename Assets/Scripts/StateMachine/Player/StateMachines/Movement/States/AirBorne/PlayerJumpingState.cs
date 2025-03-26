@@ -6,18 +6,21 @@ public class PlayerJumpingState : PlayerAirborneState
 {
     private PlayerJumpData jumpData;
     private bool shouldKeepRotating;
+    private bool canStartFalling;
+
     public PlayerJumpingState(PlayerMovementStateMachine playerMovementStateMachine) : base(playerMovementStateMachine)
     {
         jumpData = airborneData.JumpData;
     }
 
     #region IState Methods
+
     public override void Enter()
     {
         base.Enter();
 
         stateMachine.ReusableData.MovementSpeedModifier = 0f;
-        
+
         stateMachine.ReusableData.MovementDecelerationForce = jumpData.DecelerationForce;
 
         shouldKeepRotating = stateMachine.ReusableData.MovementInput != Vector2.zero;
@@ -27,8 +30,27 @@ public class PlayerJumpingState : PlayerAirborneState
     public override void Exit()
     {
         base.Exit();
-        
+
         SetBaseRotationData();
+
+        canStartFalling = false;
+    }
+
+    public override void Update()
+    {
+        base.Update();
+
+        if (!canStartFalling && IsMovingUp())
+        {
+            canStartFalling = true;
+        }
+
+        if (!canStartFalling || GetPlayerVerticalVelocity().y > 0)
+        {
+            return;
+        }
+
+        stateMachine.ChangeState(stateMachine.FallingState);
     }
 
     public override void PhysicsUpdate()
@@ -52,17 +74,16 @@ public class PlayerJumpingState : PlayerAirborneState
 
     protected override void ResetSprintState()
     {
-        
     }
 
     #endregion
-    
+
     #region Main Methods
 
     private void Jump()
     {
         Vector3 jumpForce = stateMachine.ReusableData.CurrentJumpForce;
-        
+
         Vector3 jumpDirection = stateMachine.Player.transform.forward;
 
         if (shouldKeepRotating)
@@ -75,7 +96,7 @@ public class PlayerJumpingState : PlayerAirborneState
 
         Vector3 capsuleColliderCenterInWorldSpace =
             stateMachine.Player.ColliderUtility.CapsuleColliderData.Collider.bounds.center;
-        
+
         Ray downwardsRayFromCapsuleCenter = new Ray(capsuleColliderCenterInWorldSpace, Vector3.down);
 
         if (Physics.Raycast(downwardsRayFromCapsuleCenter, out RaycastHit hit, jumpData.JumpToGroundRayDistance,
@@ -85,7 +106,7 @@ public class PlayerJumpingState : PlayerAirborneState
             if (IsMovingUp())
             {
                 float forceModifier = jumpData.JumpForceModifierOnSlopeUpwards.Evaluate(groundAngle);
-                
+
                 jumpForce.x *= forceModifier;
                 jumpForce.z *= forceModifier;
             }
@@ -93,16 +114,15 @@ public class PlayerJumpingState : PlayerAirborneState
             if (IsMovingDown())
             {
                 float forceModifier = jumpData.JumpForceModifierOnSlopeDownwards.Evaluate(groundAngle);
-                
+
                 jumpForce.y *= forceModifier;
             }
         }
-        
+
         ResetVelocity();
-        
+
         stateMachine.Player.Rigidbody.AddForce(jumpForce, ForceMode.VelocityChange);
     }
-    
 
     #endregion
 }
